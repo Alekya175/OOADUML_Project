@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Apex Drive | Premium Vehicle Rental System{% endblock %}</title>
+  <meta name="description" content="Discover and reserve premium vehicles with instant booking, date conflict prevention, and simulated payments.">
+  
+  <!-- Modern Typography: Google Font Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Design System CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block styles %}{% endblock %}
+</head>
+<body>
+  <!-- Navigation Header -->
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <div class="container nav-wrapper">
+      <a href="{{ url_for('customer.home') }}" class="brand-logo">
+        <div class="brand-icon">▲</div>
+        <span>APEX<span class="accent">DRIVE</span></span>
+        <span style="font-size: 0.68rem; font-weight: 800; background: linear-gradient(135deg, #f97316, #10b981); color: #fff; padding: 0.2rem 0.5rem; border-radius: 999px; letter-spacing: 0.05em; margin-left: 0.25rem;">INDIA 🇮🇳</span>
+      </a>
+
+      <!-- Navigation Links -->
+      <nav>
+        <ul class="nav-links" id="navLinks">
+          <li><a href="{{ url_for('customer.home') }}" class="nav-link">Home</a></li>
+          <li><a href="{{ url_for('customer.catalog') }}" class="nav-link">All Fleet</a></li>
+          <li><a href="{{ url_for('customer.catalog', category='2 Wheeler') }}" class="nav-link" style="display: inline-flex; align-items: center; gap: 0.35rem;">🏍️ 2 Wheelers</a></li>
+          <li><a href="{{ url_for('customer.catalog', category='4 Wheeler') }}" class="nav-link" style="display: inline-flex; align-items: center; gap: 0.35rem;">🚗 4 Wheelers</a></li>
+          
+          {% if current_user %}
+            {% if current_user.is_admin() %}
+              <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link">Admin Dashboard</a></li>
+              <li><a href="{{ url_for('admin.vehicles') }}" class="nav-link">Manage Fleet</a></li>
+              <li><a href="{{ url_for('admin.bookings') }}" class="nav-link">All Bookings</a></li>
+            {% else %}
+              <li><a href="{{ url_for('customer.booking_history') }}" class="nav-link">My Bookings</a></li>
+            {% endif %}
+          {% endif %}
+        </ul>
+      </nav>
+
+      <!-- Nav Actions -->
+      <div class="nav-actions">
+        {% if current_user %}
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            {% if current_user.is_admin() %}
+              <span class="badge-role admin">Admin Portal</span>
+            {% else %}
+              <span class="badge-role customer">Customer</span>
+            {% endif %}
+            
+            <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary btn-sm" title="My Profile">
+              👤 {{ current_user.full_name.split(' ')[0] }}
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-cyan btn-sm">Log Out</a>
+          </div>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm">Sign In</a>
+          <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Register</a>
+        {% endif %}
+
+        <button class="nav-toggle-btn" id="navToggleBtn" aria-label="Toggle navigation">
+          ☰
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Messages -->
+  <div class="container flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <span>{{ message }}</span>
+            <button class="alert-close" type="button" aria-label="Close">&times;</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Content -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="brand-logo" style="margin-bottom: 1rem;">
+            <div class="brand-icon">▲</div>
+            <span>APEX<span class="accent">DRIVE</span></span>
+            <span style="font-size: 0.65rem; font-weight: 800; background: linear-gradient(135deg, #f97316, #10b981); color: #fff; padding: 0.15rem 0.45rem; border-radius: 999px; margin-left: 0.3rem;">INDIA 🇮🇳</span>
+          </div>
+          <p style="color: var(--text-dim); font-size: 0.88rem; max-width: 320px; line-height: 1.5;">
+            India's premier 2-Wheeler & 4-Wheeler vehicle rental platform. Hubs across Bengaluru, Mumbai, Delhi NCR, Hyderabad, Pune & Goa. Guaranteed availability with strict date-conflict validation and instant UPI/Card simulated checkout.
+          </p>
+          <div style="margin-top: 1rem; font-size: 0.8rem; color: #38bdf8;">
+            🛡️ Simulation Gateway &bull; GST Invoicing Ready &bull; Zero Real Charge
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Fleet Explorer</h4>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('customer.catalog', category='2 Wheeler') }}" class="footer-link">🏍️ All 2-Wheelers</a></li>
+            <li><a href="{{ url_for('customer.catalog', category='4 Wheeler') }}" class="footer-link">🚗 All 4-Wheelers</a></li>
+            <li><a href="{{ url_for('customer.catalog', type='Cruiser') }}" class="footer-link">Royal Enfield & Cruisers</a></li>
+            <li><a href="{{ url_for('customer.catalog', type='Scooter') }}" class="footer-link">Activa & City Scooters</a></li>
+            <li><a href="{{ url_for('customer.catalog', type='SUV') }}" class="footer-link">Thar 4x4, Creta & SUVs</a></li>
+            <li><a href="{{ url_for('customer.catalog', type='Electric') }}" class="footer-link">⚡ Ather & Nexon EVs</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Major City Hubs</h4>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('customer.catalog', location='Indiranagar Hub, Bengaluru') }}" class="footer-link">📍 Bengaluru (Indiranagar / Airport)</a></li>
+            <li><a href="{{ url_for('customer.catalog', location='Bandra West, Mumbai') }}" class="footer-link">📍 Mumbai (BKC / Bandra)</a></li>
+            <li><a href="{{ url_for('customer.catalog', location='Cyber Hub Gurgaon, Delhi NCR') }}" class="footer-link">📍 Delhi NCR (Gurgaon / IGI T3)</a></li>
+            <li><a href="{{ url_for('customer.catalog', location='Hitec City Cyber Towers, Hyderabad') }}" class="footer-link">📍 Hyderabad (Hitec City)</a></li>
+            <li><a href="{{ url_for('customer.catalog', location='North Goa Baga Coastal Hub') }}" class="footer-link">📍 Goa (Baga Coastal Hub)</a></li>
+            <li><a href="{{ url_for('customer.catalog', location='Pune Airport Terminal (Viman Nagar)') }}" class="footer-link">📍 Pune (Viman Nagar)</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Support & Standards</h4>
+          <ul class="footer-links">
+            <li><span style="color: var(--text-muted); font-size: 0.85rem;">📞 24x7 India Helpline: +91 80 4567 8900</span></li>
+            <li><span style="color: var(--text-muted); font-size: 0.85rem;">🪖 ISI Certified Helmets Included</span></li>
+            <li><span style="color: var(--text-muted); font-size: 0.85rem;">🚗 Pre-fitted Fastag on 4-Wheelers</span></li>
+            <li><span style="color: var(--text-muted); font-size: 0.85rem;">📱 UPI / RuPay / NetBanking Mock Pay</span></li>
+            <li><a href="#cancellation-policy" onclick="alert('Apex Drive India Cancellation Policy:\n\nFree cancellation is available anytime before the scheduled pickup date. Full simulated refund will be processed immediately.')" class="footer-link">Cancellation Policy</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 Apex Drive India Private Limited. All rights reserved. GSTIN Compliant.</div>
+        <div style="font-size: 0.82rem; color: var(--text-dim);">
+          Demo accounts: <strong style="color: #a5b4fc;">admin</strong> / <strong style="color: #a5b4fc;">Admin@123</strong> &bull; <strong style="color: #6ee7b7;">customer</strong> / <strong style="color: #6ee7b7;">Customer@123</strong>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script>window.CURRENCY_SYMBOL = "{{ currency_symbol }}";</script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

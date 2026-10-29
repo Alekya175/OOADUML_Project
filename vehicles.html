@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Fleet | Apex Drive Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+        <span class="badge-role admin">Fleet Inventory</span>
+      </div>
+      <h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em;">Manage Fleet Vehicles</h1>
+    </div>
+
+    <div>
+      <a href="{{ url_for('admin.add_vehicle') }}" class="btn btn-primary">
+        + Add New Vehicle
+      </a>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 2rem;">
+    <form action="{{ url_for('admin.vehicles') }}" method="GET" style="display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr auto; gap: 1rem; align-items: center;">
+      <input type="text" name="q" class="input-control" placeholder="Search by name, make, Indian hub location..." value="{{ query_text }}">
+
+      <select name="category" class="select-control">
+        <option value="">All Wheels (2W & 4W)</option>
+        <option value="2 Wheeler" {% if selected_category == '2 Wheeler' %}selected{% endif %}>🏍️ 2 Wheelers</option>
+        <option value="4 Wheeler" {% if selected_category == '4 Wheeler' %}selected{% endif %}>🚗 4 Wheelers</option>
+      </select>
+
+      <select name="type" class="select-control">
+        <option value="">All Body Types</option>
+        {% for t in types %}
+          <option value="{{ t }}" {% if selected_type == t %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="status" class="select-control">
+        <option value="">All Statuses</option>
+        <option value="available" {% if selected_status == 'available' %}selected{% endif %}>Available</option>
+        <option value="rented" {% if selected_status == 'rented' %}selected{% endif %}>Rented</option>
+        <option value="maintenance" {% if selected_status == 'maintenance' %}selected{% endif %}>Maintenance</option>
+        <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive / Deactivated</option>
+      </select>
+
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-secondary">Filter</button>
+        {% if query_text or selected_category or selected_type or selected_status %}
+          <a href="{{ url_for('admin.vehicles') }}" class="btn btn-outline" style="padding: 0.6rem 0.8rem;" title="Clear Filters">✕</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Fleet Table -->
+  <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-xl); padding: 1.75rem;">
+    {% if vehicles %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Vehicle</th>
+              <th>Wheel Category</th>
+              <th>Daily Rate</th>
+              <th>Hub Location</th>
+              <th>Specifications</th>
+              <th>Status</th>
+              <th>Change Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for v in vehicles %}
+              <tr>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 1rem;">
+                    <img src="{{ v.image_url }}" alt="{{ v.name }}" style="width: 70px; height: 45px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-glass);">
+                    <div>
+                      <div style="font-weight: 700; color: var(--text-main);">{{ v.name }}</div>
+                      <div style="font-size: 0.8rem; color: var(--text-dim);">{{ v.make }} {{ v.model }} ({{ v.year }})</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge-role {% if v.category == '2 Wheeler' %}admin{% else %}customer{% endif %}" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.78rem;">
+                    {{ v.category_icon }} {{ v.category }}
+                  </span>
+                  <div style="font-size: 0.78rem; color: var(--text-dim); margin-top: 0.25rem;">{{ v.vehicle_type }}</div>
+                </td>
+                <td style="font-weight: 700; color: #38bdf8;">
+                  {{ v.daily_rate|format_currency }}
+                </td>
+                <td style="font-size: 0.88rem; color: var(--text-muted);">
+                  📍 {{ v.location }}
+                </td>
+                <td style="font-size: 0.82rem; color: var(--text-dim);">
+                  {% if v.is_two_wheeler %}
+                    2 Riders (Helmets Inc.) &bull; {{ v.transmission }} &bull; {{ v.fuel_type }}
+                  {% else %}
+                    {{ v.seating_capacity }} seats &bull; {{ v.transmission }} &bull; {{ v.fuel_type }}
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="status-pill {{ v.status }}">● {{ v.status|capitalize }}</span>
+                </td>
+                <td>
+                  <form action="{{ url_for('admin.toggle_vehicle_status', vehicle_id=v.id) }}" method="POST">
+                    <select name="status" onchange="this.form.submit()" class="select-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: auto;">
+                      <option value="available" {% if v.status == 'available' %}selected{% endif %}>Available</option>
+                      <option value="rented" {% if v.status == 'rented' %}selected{% endif %}>Rented</option>
+                      <option value="maintenance" {% if v.status == 'maintenance' %}selected{% endif %}>Maintenance</option>
+                      <option value="inactive" {% if v.status == 'inactive' %}selected{% endif %}>Deactivate</option>
+                    </select>
+                  </form>
+                </td>
+                <td>
+                  <div style="display: flex; gap: 0.4rem;">
+                    <a href="{{ url_for('admin.edit_vehicle', vehicle_id=v.id) }}" class="btn btn-secondary btn-sm" title="Edit Vehicle">
+                      Edit
+                    </a>
+                    <a href="{{ url_for('customer.vehicle_detail', vehicle_id=v.id) }}" target="_blank" class="btn btn-outline-cyan btn-sm" title="View Customer Page">
+                      View
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="text-align: center; color: var(--text-muted); padding: 3rem;">No vehicles found matching current criteria.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

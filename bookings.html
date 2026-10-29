@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Reservations | Apex Drive Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+        <span class="badge-role admin">Booking Operations</span>
+      </div>
+      <h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em;">All Customer Reservations</h1>
+    </div>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 2rem;">
+    <form action="{{ url_for('admin.bookings') }}" method="GET" style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; align-items: center;">
+      <input type="text" name="q" class="input-control" placeholder="Search by customer name, email, booking reference, or vehicle..." value="{{ query_text }}">
+
+      <select name="status" class="select-control">
+        <option value="">All Statuses</option>
+        <option value="pending_payment" {% if selected_status == 'pending_payment' %}selected{% endif %}>Pending Payment</option>
+        <option value="confirmed" {% if selected_status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+        <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
+        <option value="cancelled" {% if selected_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+      </select>
+
+      <button type="submit" class="btn btn-secondary">Search & Filter</button>
+    </form>
+  </div>
+
+  <!-- Bookings Data Table -->
+  <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-xl); padding: 1.75rem;">
+    {% if bookings %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Customer</th>
+              <th>Vehicle</th>
+              <th>Rental Window</th>
+              <th>Duration</th>
+              <th>Total Amount</th>
+              <th>Current Status</th>
+              <th>Update Status</th>
+              <th>Invoice</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in bookings %}
+              <tr>
+                <td>
+                  <span style="font-family: monospace; font-weight: 700; color: #38bdf8;">{{ b.booking_reference }}</span>
+                  <div style="font-size: 0.75rem; color: var(--text-dim);">{{ b.created_at.strftime('%b %d, %Y') }}</div>
+                </td>
+                <td>
+                  <div style="font-weight: 600; color: var(--text-main);">{{ b.user.full_name }}</div>
+                  <div style="font-size: 0.8rem; color: var(--text-dim);">{{ b.user.email }}</div>
+                  <div style="font-size: 0.75rem; color: var(--text-dim);">{{ b.user.phone or '' }}</div>
+                </td>
+                <td>
+                  <a href="{{ url_for('customer.vehicle_detail', vehicle_id=b.vehicle_id) }}" style="font-weight: 600; color: var(--text-main);">
+                    {{ b.vehicle.name }}
+                  </a>
+                  <div style="font-size: 0.78rem; color: var(--text-dim);">📍 {{ b.vehicle.location }}</div>
+                </td>
+                <td>
+                  <div style="font-weight: 600;">{{ b.pickup_date|format_date }} &rarr; {{ b.return_date|format_date }}</div>
+                </td>
+                <td>
+                  <span style="color: var(--text-muted); font-size: 0.85rem;">{{ b.total_days }} day{{ 's' if b.total_days > 1 else '' }}</span>
+                </td>
+                <td style="font-weight: 800; color: var(--text-main);">
+                  {{ b.total_amount|format_currency }}
+                </td>
+                <td>
+                  <span class="status-pill {{ b.status }}">● {{ b.status|replace('_', ' ')|capitalize }}</span>
+                </td>
+                <td>
+                  <form action="{{ url_for('admin.update_booking_status', booking_id=b.id) }}" method="POST" style="display: flex; gap: 0.4rem; align-items: center;">
+                    <select name="status" class="select-control" style="padding: 0.3rem 0.5rem; font-size: 0.82rem; width: auto;">
+                      <option value="pending_payment" {% if b.status == 'pending_payment' %}selected{% endif %}>Pending</option>
+                      <option value="confirmed" {% if b.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                      <option value="completed" {% if b.status == 'completed' %}selected{% endif %}>Completed</option>
+                      <option value="cancelled" {% if b.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                    <button type="submit" class="btn btn-secondary btn-sm" style="padding: 0.3rem 0.6rem;">Update</button>
+                  </form>
+                </td>
+                <td>
+                  <a href="{{ url_for('customer.booking_detail', booking_ref=b.booking_reference) }}" target="_blank" class="btn btn-outline-cyan btn-sm">
+                    View
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="text-align: center; color: var(--text-muted); padding: 3rem;">No customer reservations found matching current filter.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile | Apex Drive{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 2.2rem; font-weight: 800;">Account Profile</h1>
+    <p style="color: var(--text-muted);">Manage your personal information and contact details</p>
+  </div>
+
+  <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-xl); padding: 2.5rem;">
+    <div style="display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-glass);">
+      <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-indigo)); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: white; font-weight: 700;">
+        {{ user.full_name[0] }}
+      </div>
+      <div>
+        <h2 style="font-size: 1.4rem; font-weight: 700;">{{ user.full_name }}</h2>
+        <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.25rem;">
+          <span class="badge-role {{ user.role }}">{{ user.role|capitalize }}</span>
+          <span style="color: var(--text-dim); font-size: 0.85rem;">Member since {{ user.created_at.strftime('%B %Y') }}</span>
+        </div>
+      </div>
+    </div>
+
+    <form action="{{ url_for('auth.profile') }}" method="POST">
+      <div class="form-group">
+        <label for="username_disp" class="form-label">Username</label>
+        <input type="text" id="username_disp" class="input-control" value="{{ user.username }}" disabled style="opacity: 0.7; cursor: not-allowed;">
+        <div class="form-text">Usernames cannot be changed.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="email_disp" class="form-label">Email Address</label>
+        <input type="email" id="email_disp" class="input-control" value="{{ user.email }}" disabled style="opacity: 0.7; cursor: not-allowed;">
+      </div>
+
+      <div class="form-group">
+        <label for="full_name" class="form-label">Full Name</label>
+        <input type="text" name="full_name" id="full_name" class="input-control" value="{{ user.full_name }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="phone" class="form-label">Phone Number</label>
+        <input type="tel" name="phone" id="phone" class="input-control" value="{{ user.phone or '' }}" placeholder="+1 (555) 000-0000">
+      </div>
+
+      <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+        <a href="{{ url_for('customer.booking_history') }}" class="btn btn-secondary">View My Reservations</a>
+        <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

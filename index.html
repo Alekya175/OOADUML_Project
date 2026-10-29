@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Apex Drive India | 2-Wheeler & 4-Wheeler Rentals{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-tag">
+        <span>⚡</span> Pan-India Hubs &bull; 🏍️ 2-Wheelers &bull; 🚗 4-Wheelers &bull; Zero Conflict Guarantee
+      </div>
+      <h1 class="hero-title">
+        Ride & Drive Across India. <br>
+        <span class="highlight">Bikes, Scooters, Cars & SUVs.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Rent Royal Enfield cruisers, Activa scooters, Thar 4x4s, and executive sedans across Bengaluru, Mumbai, Delhi NCR, Hyderabad, Pune & Goa. Guaranteed date-conflict prevention with instant UPI/Card simulated booking.
+      </p>
+    </div>
+
+    <!-- Quick Date & Vehicle Search Card -->
+    <div class="search-widget-card">
+      <form action="{{ url_for('customer.catalog') }}" method="GET" class="search-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) 160px;">
+        <div class="search-field">
+          <label for="search_category" class="search-label">Wheel Category</label>
+          <select name="category" id="search_category" class="select-control">
+            <option value="">All (2W & 4W)</option>
+            <option value="2 Wheeler">🏍️ 2 Wheelers</option>
+            <option value="4 Wheeler">🚗 4 Wheelers</option>
+          </select>
+        </div>
+
+        <div class="search-field">
+          <label for="search_type" class="search-label">Vehicle Segment</label>
+          <select name="type" id="search_type" class="select-control">
+            <option value="">All Segments</option>
+            {% for t in vehicle_types %}
+              <option value="{{ t }}">{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="search-field">
+          <label for="search_location" class="search-label">City Hub Location</label>
+          <select name="location" id="search_location" class="select-control">
+            <option value="">All City Hubs</option>
+            {% for loc in locations %}
+              <option value="{{ loc }}">{{ loc }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="search-field">
+          <label for="search_pickup" class="search-label">Pickup Date</label>
+          <input type="date" name="pickup_date" id="search_pickup" class="input-control" min="{{ today }}">
+        </div>
+
+        <div class="search-field">
+          <label for="search_return" class="search-label">Return Date</label>
+          <input type="date" name="return_date" id="search_return" class="input-control" min="{{ today }}">
+        </div>
+
+        <div class="search-field">
+          <button type="submit" class="btn btn-primary btn-block" style="height: 48px;">
+            <span>🔍</span> Find Fleet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Category Quick-Explore Section -->
+<section style="padding: 1.5rem 0; background: rgba(15, 23, 42, 0.6); border-top: 1px solid var(--border-glass); border-bottom: 1px solid var(--border-glass);">
+  <div class="container">
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a href="{{ url_for('customer.catalog', category='2 Wheeler') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.1);">
+        <span style="font-size: 1.3rem;">🏍️</span>
+        <div style="text-align: left;">
+          <div style="font-weight: 700; color: #fff;">Explore 2-Wheelers</div>
+          <div style="font-size: 0.75rem; color: #a5b4fc;">Royal Enfield, Activa, Ather, KTM &bull; from ₹550/day</div>
+        </div>
+      </a>
+      <a href="{{ url_for('customer.catalog', category='4 Wheeler') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.1);">
+        <span style="font-size: 1.3rem;">🚗</span>
+        <div style="text-align: left;">
+          <div style="font-weight: 700; color: #fff;">Explore 4-Wheelers</div>
+          <div style="font-size: 0.75rem; color: #6ee7b7;">Thar 4x4, Creta, Nexon EV, Swift &bull; from ₹1,400/day</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Value Propositions Section -->
+<section class="section" style="background: rgba(255, 255, 255, 0.015); border-bottom: 1px solid var(--border-glass);">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2rem;">
+      <div style="padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg);">
+        <div style="font-size: 2rem; margin-bottom: 0.75rem;">🛡️</div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.4rem;">Zero-Overlap Guarantee</h3>
+        <p style="color: var(--text-dim); font-size: 0.88rem; line-height: 1.5;">
+          Our mathematical reservation engine guarantees zero overlapping bookings for confirmed dates.
+        </p>
+      </div>
+
+      <div style="padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg);">
+        <div style="font-size: 2rem; margin-bottom: 0.75rem;">📱</div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.4rem;">UPI & RuPay Mock Pay</h3>
+        <p style="color: var(--text-dim); font-size: 0.88rem; line-height: 1.5;">
+          Simulate payment via Google Pay, PhonePe, Paytm, RuPay Cards or Net Banking with 1-click test scenarios.
+        </p>
+      </div>
+
+      <div style="padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg);">
+        <div style="font-size: 2rem; margin-bottom: 0.75rem;">🪖</div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.4rem;">Helmets & Fastag Ready</h3>
+        <p style="color: var(--text-dim); font-size: 0.88rem; line-height: 1.5;">
+          Sanitized ISI helmets provided with all 2-wheelers. All 4-wheelers pre-fitted with automated Fastag toll passes.
+        </p>
+      </div>
+
+      <div style="padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg);">
+        <div style="font-size: 2rem; margin-bottom: 0.75rem;">🇮🇳</div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.4rem;">Transparent Rupee Rates</h3>
+        <p style="color: var(--text-dim); font-size: 0.88rem; line-height: 1.5;">
+          Clear 24-hour daily rates in Indian Rupees (₹) with full GST tax itemization and zero hidden surcharge.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Fleet Section -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Featured Fleet in India</h2>
+        <p class="section-subtitle">Top-rated two-wheelers and four-wheelers ready for immediate reservation</p>
+      </div>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="{{ url_for('customer.catalog', category='2 Wheeler') }}" class="btn btn-secondary btn-sm">
+          🏍️ 2-Wheelers
+        </a>
+        <a href="{{ url_for('customer.catalog', category='4 Wheeler') }}" class="btn btn-secondary btn-sm">
+          🚗 4-Wheelers
+        </a>
+        <a href="{{ url_for('customer.catalog') }}" class="btn btn-primary btn-sm">
+          View All Fleet &rarr;
+        </a>
+      </div>
+    </div>
+
+    <div class="vehicles-grid">
+      {% for vehicle in featured_vehicles %}
+        <div class="vehicle-card">
+          <div class="vehicle-media">
+            <img src="{{ vehicle.image_url }}" alt="{{ vehicle.name }}" loading="lazy">
+            <span class="vehicle-badge-type" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px);">
+              {{ vehicle.category_icon }} {{ vehicle.category }} &bull; {{ vehicle.vehicle_type }}
+            </span>
+            <span class="vehicle-badge-status {{ vehicle.status }}">{{ vehicle.status }}</span>
+          </div>
+
+          <div class="vehicle-body">
+            <div class="vehicle-location">
+              <span>📍</span> {{ vehicle.location }}
+            </div>
+            <h3 class="vehicle-title">{{ vehicle.name }}</h3>
+
+            <div class="vehicle-specs">
+              <div class="spec-item">
+                <span>👥</span> 
+                {% if vehicle.is_two_wheeler %}
+                  2 Riders (Helmet)
+                {% else %}
+                  {{ vehicle.seating_capacity }} Seats
+                {% endif %}
+              </div>
+              <div class="spec-item"><span>⚙️</span> {{ vehicle.transmission }}</div>
+              <div class="spec-item"><span>⛽</span> {{ vehicle.fuel_type }}</div>
+            </div>
+
+            <p style="color: var(--text-dim); font-size: 0.85rem; line-height: 1.4; margin-bottom: 1.25rem;">
+              {{ vehicle.description[:115] }}...
+            </p>
+
+            <div class="vehicle-footer">
+              <div class="vehicle-price">
+                <span class="price-value">{{ vehicle.daily_rate|format_currency }}</span>
+                <span class="price-period">per day</span>
+              </div>
+              <a href="{{ url_for('customer.vehicle_detail', vehicle_id=vehicle.id) }}" class="btn btn-primary btn-sm">
+                View & Book
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="section" style="background: rgba(15, 23, 42, 0.4); border-top: 1px solid var(--border-glass);">
+  <div class="container">
+    <div style="text-align: center; max-width: 600px; margin: 0 auto 3rem;">
+      <h2 class="section-title">How It Works in India</h2>
+      <p class="section-subtitle">Effortless vehicle reservation in three simple steps</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+      <div style="text-align: center; padding: 2rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-glass);">
+        <div style="width: 50px; height: 50px; background: rgba(14, 165, 233, 0.15); color: #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; margin: 0 auto 1.25rem;">1</div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">Choose 2W or 4W & Dates</h3>
+        <p style="color: var(--text-dim); font-size: 0.88rem;">
+          Pick a scooter, cruiser bike, SUV, or luxury sedan and choose your pickup & return dates with real-time conflict checking.
+        </p>
+      </div>
+
+      <div style="text-align: center; padding: 2rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-glass);">
+        <div style="width: 50px; height: 50px; background: rgba(99, 102, 241, 0.15); color: #818cf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; margin: 0 auto 1.25rem;">2</div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">Simulate UPI / Card Pay</h3>
+        <p style="color: var(--text-dim); font-size: 0.88rem;">
+          Try our interactive UPI & RuPay simulator with 1-click approval or decline scenarios in Indian Rupees (₹)—no real money charged.
+        </p>
+      </div>
+
+      <div style="text-align: center; padding: 2rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-glass);">
+        <div style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.15); color: #34d399; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; margin: 0 auto 1.25rem;">3</div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">Instant Hub Confirmation</h3>
+        <p style="color: var(--text-dim); font-size: 0.88rem;">
+          Receive your unique booking reference, GST receipt breakdown, and show your driving licence at the hub to collect keys.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

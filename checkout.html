@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout & Simulated Payment | {{ booking.booking_reference }}{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <!-- Stepper Header -->
+  <div style="margin-bottom: 2rem; text-align: center;">
+    <div style="display: inline-flex; align-items: center; gap: 0.75rem; background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: 999px; padding: 0.5rem 1.25rem; font-size: 0.88rem;">
+      <span style="color: #34d399; font-weight: 700;">1. Select Vehicle</span>
+      <span style="color: var(--text-dim);">&rarr;</span>
+      <span style="color: #38bdf8; font-weight: 700;">2. Indian Payment Gateway</span>
+      <span style="color: var(--text-dim);">&rarr;</span>
+      <span style="color: var(--text-dim);">3. Confirmation</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1.35fr; gap: 2.5rem; align-items: flex-start;">
+    <!-- Left Column: Booking Summary -->
+    <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-xl); padding: 2rem;">
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-glass);">
+        Reservation Summary
+      </h3>
+
+      <div style="display: flex; gap: 1.25rem; margin-bottom: 1.5rem;">
+        <img src="{{ booking.vehicle.image_url }}" alt="{{ booking.vehicle.name }}" style="width: 120px; height: 75px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
+        <div>
+          <span class="badge-role" style="font-size: 0.7rem; background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.4); font-weight: 700;">
+            {{ booking.vehicle.category_icon }} {{ booking.vehicle.category }}
+          </span>
+          <span class="badge-role customer" style="font-size: 0.7rem; margin-left: 0.25rem;">{{ booking.vehicle.vehicle_type }}</span>
+          <h4 style="font-size: 1.1rem; font-weight: 700; margin: 0.35rem 0 0.2rem;">{{ booking.vehicle.name }}</h4>
+          <div style="font-size: 0.85rem; color: var(--text-dim);">📍 {{ booking.vehicle.location }}</div>
+        </div>
+      </div>
+
+      <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Pickup Date</div>
+            <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">{{ booking.pickup_date|format_date }}</div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Return Date</div>
+            <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">{{ booking.return_date|format_date }}</div>
+          </div>
+        </div>
+        <div style="font-size: 0.82rem; color: var(--text-muted); border-top: 1px solid var(--border-glass); padding-top: 0.5rem;">
+          Duration: <strong>{{ booking.total_days }} rental day{{ 's' if booking.total_days > 1 else '' }}</strong> (24-hour daily periods)
+        </div>
+      </div>
+
+      <!-- Itemized Price Breakdown in INR -->
+      <div style="display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.92rem; color: var(--text-muted);">
+          <span>Daily Rental Rate</span>
+          <span>{{ booking.daily_rate|format_currency }} / day</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.92rem; color: var(--text-muted);">
+          <span>Rental Subtotal ({{ booking.total_days }} days &times; {{ booking.daily_rate|format_currency }})</span>
+          <span>{{ booking.subtotal_amount|format_currency }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.92rem; color: var(--text-muted);">
+          <span>GST & Taxes (8% Compliant)</span>
+          <span>{{ booking.tax_amount|format_currency }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 800; color: var(--text-main); border-top: 1px solid var(--border-glass); padding-top: 0.85rem; margin-top: 0.35rem;">
+          <span>Total Payable</span>
+          <span style="color: #38bdf8;">{{ booking.total_amount|format_currency }}</span>
+        </div>
+      </div>
+
+      <!-- Cancellation Policy Alert -->
+      <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 1rem; font-size: 0.85rem; color: #a7f3d0;">
+        <div style="font-weight: 700; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.35rem;">
+          <span>🛡️</span> Cancellation Policy
+        </div>
+        {{ cancellation_policy }}
+      </div>
+    </div>
+
+    <!-- Right Column: Indian Simulated Payment Form -->
+    <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-lg);">
+      <!-- Simulation Environment Notice -->
+      <div style="background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem; text-align: center;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+          ⚡ Indian Payment Simulation Gateway &bull; Zero Real Charge
+        </div>
+        <div style="font-size: 0.82rem; color: var(--text-muted);">
+          Experience authentic Indian payment methods (UPI, RuPay, Net Banking) with instant test approval or decline.
+        </div>
+      </div>
+
+      <!-- Quick Fill Test Buttons -->
+      <div class="quick-fill-box" style="margin-bottom: 1.5rem;">
+        <p>⚡ 1-Click Test Scenarios</p>
+        <div class="quick-fill-btns">
+          <button type="button" class="btn btn-emerald btn-sm" onclick="fillSimulatedPayment('success')">
+            ✓ Scenario: Approve Payment
+          </button>
+          <button type="button" class="btn btn-danger btn-sm" onclick="fillSimulatedPayment('failure')">
+            ✕ Scenario: Decline Payment
+          </button>
+        </div>
+      </div>
+
+      <!-- Payment Method Navigation Tabs -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1.5rem;">
+        <button type="button" class="btn btn-primary btn-sm payment-tab-btn" id="tab_upi" onclick="selectPaymentTab('upi')" style="padding: 0.6rem 0.25rem; font-size: 0.8rem; text-align: center;">
+          📱 UPI
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm payment-tab-btn" id="tab_card" onclick="selectPaymentTab('card')" style="padding: 0.6rem 0.25rem; font-size: 0.8rem; text-align: center;">
+          💳 RuPay/Card
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm payment-tab-btn" id="tab_netbanking" onclick="selectPaymentTab('netbanking')" style="padding: 0.6rem 0.25rem; font-size: 0.8rem; text-align: center;">
+          🏦 Net Banking
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm payment-tab-btn" id="tab_hub" onclick="selectPaymentTab('hub')" style="padding: 0.6rem 0.25rem; font-size: 0.8rem; text-align: center;">
+          💵 Pay on Hub
+        </button>
+      </div>
+
+      <form action="{{ url_for('customer.checkout', booking_ref=booking.booking_reference) }}" method="POST" id="simulatedPaymentForm">
+        <input type="hidden" name="payment_mode" id="selected_payment_mode" value="upi">
+        <input type="hidden" name="payment_method" id="selected_payment_method" value="UPI (Google Pay / PhonePe)">
+
+        <!-- UPI Tab Content -->
+        <div id="section_upi" class="payment-method-section">
+          <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-weight: 700; color: #34d399; font-size: 0.9rem;">Instant UPI Transfer</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Supports Google Pay, PhonePe, Paytm, BHIM & CRED</div>
+            </div>
+            <div style="font-size: 1.6rem;">📱</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="upi_id">Virtual Payment Address (UPI ID) *</label>
+            <input type="text" name="upi_id" id="upi_id" class="input-control" placeholder="e.g. yourname@okaxis or 9876543210@paytm" value="{{ current_user.username }}@oksbi">
+            <div class="form-text">Popular UPI handles: <code>@oksbi</code>, <code>@okicici</code>, <code>@okhdfcbank</code>, <code>@paytm</code>, <code>@ybl</code></div>
+          </div>
+
+          <div style="text-align: center; padding: 1rem; background: rgba(15, 23, 42, 0.5); border-radius: var(--radius-md); border: 1px dashed var(--border-glass); margin-bottom: 1rem;">
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">OR SCAN SIMULATED QR CODE</div>
+            <div style="display: inline-block; background: #fff; padding: 0.6rem; border-radius: var(--radius-sm);">
+              <!-- Simulated QR SVG graphic -->
+              <svg width="100" height="100" viewBox="0 0 100 100" fill="#0f172a">
+                <rect width="100" height="100" fill="#ffffff"/>
+                <rect x="10" y="10" width="25" height="25" fill="#0f172a"/>
+                <rect x="15" y="15" width="15" height="15" fill="#ffffff"/>
+                <rect x="18" y="18" width="9" height="9" fill="#0f172a"/>
+                <rect x="65" y="10" width="25" height="25" fill="#0f172a"/>
+                <rect x="70" y="15" width="15" height="15" fill="#ffffff"/>
+                <rect x="73" y="18" width="9" height="9" fill="#0f172a"/>
+                <rect x="10" y="65" width="25" height="25" fill="#0f172a"/>
+                <rect x="15" y="70" width="15" height="15" fill="#ffffff"/>
+                <rect x="18" y="73" width="9" height="9" fill="#0f172a"/>
+                <rect x="42" y="15" width="8" height="20" fill="#0f172a"/>
+                <rect x="42" y="45" width="16" height="12" fill="#0f172a"/>
+                <rect x="65" y="45" width="20" height="8" fill="#0f172a"/>
+                <rect x="65" y="65" width="12" height="20" fill="#0f172a"/>
+                <rect x="42" y="70" width="16" height="15" fill="#0f172a"/>
+              </svg>
+            </div>
+            <div style="font-size: 0.75rem; color: #34d399; margin-top: 0.35rem; font-weight: 600;">BHIM UPI &bull; Scan & Pay Ready</div>
+          </div>
+        </div>
+
+        <!-- RuPay / Card Tab Content -->
+        <div id="section_card" class="payment-method-section" style="display: none;">
+          <div class="form-group">
+            <label class="form-label" for="cardholder_name">Cardholder Full Name</label>
+            <input type="text" name="cardholder_name" id="cardholder_name" class="input-control" value="{{ current_user.full_name }}">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="card_number">RuPay / Visa / MasterCard Number</label>
+            <input type="text" name="card_number" id="card_number" class="input-control" value="6070 1234 5678 9010" placeholder="6070 xxxx xxxx xxxx">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="card_expiry">Expiry Date</label>
+              <input type="text" name="card_expiry" id="card_expiry" class="input-control" value="12/28" placeholder="MM/YY">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="card_cvv">CVV (Simulated)</label>
+              <input type="password" name="card_cvv" id="card_cvv" class="input-control" value="888" maxlength="4">
+            </div>
+          </div>
+        </div>
+
+        <!-- Net Banking Tab Content -->
+        <div id="section_netbanking" class="payment-method-section" style="display: none;">
+          <div class="form-group">
+            <label class="form-label" for="bank_name">Select Indian Bank</label>
+            <select name="bank_name" id="bank_name" class="select-control">
+              <option value="State Bank of India (SBI)" selected>State Bank of India (SBI)</option>
+              <option value="HDFC Bank">HDFC Bank</option>
+              <option value="ICICI Bank">ICICI Bank</option>
+              <option value="Axis Bank">Axis Bank</option>
+              <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+              <option value="Punjab National Bank (PNB)">Punjab National Bank (PNB)</option>
+              <option value="Bank of Baroda">Bank of Baroda</option>
+            </select>
+          </div>
+          <div style="background: rgba(14, 165, 233, 0.08); padding: 0.85rem; border-radius: var(--radius-md); font-size: 0.85rem; color: var(--text-dim); margin-bottom: 1rem;">
+            ℹ️ You will be redirected to a simulated Indian net banking portal to authenticate and authorize the transaction.
+          </div>
+        </div>
+
+        <!-- Pay on Hub Tab Content -->
+        <div id="section_hub" class="payment-method-section" style="display: none;">
+          <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1rem;">
+            <div style="font-weight: 700; color: #f59e0b; margin-bottom: 0.35rem;">Pay Directly at Pickup Counter</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+              Pay via Cash, UPI QR, or Debit/Credit card directly at <strong>{{ booking.vehicle.location }}</strong> when inspecting and picking up your vehicle keys.
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation Outcome Option -->
+        <div class="form-group" style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
+          <label class="form-label" style="margin-bottom: 0.75rem;">Simulate Transaction Result</label>
+          <div style="display: flex; gap: 1.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem;">
+              <input type="radio" name="simulated_outcome" id="outcome_success" value="success" checked>
+              <span style="color: #34d399; font-weight: 600;">Success (Approve)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem;">
+              <input type="radio" name="simulated_outcome" id="outcome_failure" value="failure">
+              <span style="color: #fb7185; font-weight: 600;">Failure (Decline)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Decline Reason (visible only when failure selected) -->
+        <div class="form-group" id="failureReasonContainer" style="display: none;">
+          <label class="form-label" for="failure_reason">Simulated Failure Reason</label>
+          <select name="failure_reason" id="failure_reason" class="select-control">
+            <option value="Simulated UPI Decline: Incorrect UPI PIN or server timeout.">Simulated UPI: Incorrect PIN or timeout</option>
+            <option value="Simulated Card Decline: Insufficient test funds available.">Simulated Card: Insufficient funds</option>
+            <option value="Simulated Bank Decline: Bank server not responding.">Simulated Bank: Server unresponsive</option>
+            <option value="Simulated Gateway Timeout: NPCI network unavailable.">Simulated Timeout: NPCI switch error</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-emerald btn-lg btn-block" id="simulatePayBtn" style="margin-top: 1.5rem;">
+          🔒 Complete Simulated Payment ({{ booking.total_amount|format_currency }})
+        </button>
+
+        <div style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: var(--text-dim);">
+          Encrypted 256-bit test session &bull; NPCI & RBI Simulation Mock &bull; Zero real charge
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,17 @@
+[
+  "tests/test_auth.py::test_admin_route_protection",
+  "tests/test_auth.py::test_login_invalid_credentials",
+  "tests/test_auth.py::test_login_success_and_logout",
+  "tests/test_auth.py::test_registration_duplicate_username",
+  "tests/test_auth.py::test_registration_password_mismatch",
+  "tests/test_auth.py::test_user_registration",
+  "tests/test_availability.py::test_overlapping_availability_conflicts",
+  "tests/test_booking.py::test_booking_date_validation_rules",
+  "tests/test_booking.py::test_booking_duration_and_pricing_calculation",
+  "tests/test_cancellation.py::test_booking_cancellation_rules_and_refund",
+  "tests/test_cancellation.py::test_cannot_cancel_past_booking",
+  "tests/test_fleet_category.py::test_admin_vehicle_category_filtering",
+  "tests/test_fleet_category.py::test_catalog_category_filtering",
+  "tests/test_fleet_category.py::test_upi_checkout_flow",
+  "tests/test_fleet_category.py::test_vehicle_category_helpers"
+]

@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Fleet Catalog | Apex Drive India{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em;">Explore Our Indian Fleet</h1>
+    <p style="color: var(--text-muted); font-size: 1rem; margin-top: 0.25rem;">
+      Find and filter 2-wheelers and 4-wheelers across Indian metro hubs with date-conflict availability checking.
+    </p>
+  </div>
+
+  <!-- Category Filter Pill Bar -->
+  <div style="display: flex; gap: 0.75rem; margin-bottom: 2rem; flex-wrap: wrap;">
+    <a href="{{ url_for('customer.catalog', q=query_text, type=selected_type, location=selected_location, pickup_date=pickup_date, return_date=return_date) }}" 
+       class="btn {% if not selected_category %}btn-primary{% else %}btn-secondary{% endif %} btn-sm" style="border-radius: 999px;">
+      All Fleet ({{ category_counts.all if category_counts else total_count }})
+    </a>
+    <a href="{{ url_for('customer.catalog', category='2 Wheeler', q=query_text, type=selected_type, location=selected_location, pickup_date=pickup_date, return_date=return_date) }}" 
+       class="btn {% if selected_category == '2 Wheeler' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm" style="border-radius: 999px;">
+      🏍️ 2 Wheelers ({{ category_counts.two_w if category_counts else '' }})
+    </a>
+    <a href="{{ url_for('customer.catalog', category='4 Wheeler', q=query_text, type=selected_type, location=selected_location, pickup_date=pickup_date, return_date=return_date) }}" 
+       class="btn {% if selected_category == '4 Wheeler' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm" style="border-radius: 999px;">
+      🚗 4 Wheelers ({{ category_counts.four_w if category_counts else '' }})
+    </a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 280px 1fr; gap: 2rem; align-items: flex-start;">
+    <!-- Filters Sidebar -->
+    <aside style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.5rem; position: sticky; top: 90px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-glass);">
+        <h3 style="font-size: 1.1rem; font-weight: 700;">Filters</h3>
+        <a href="{{ url_for('customer.catalog') }}" style="font-size: 0.82rem; color: var(--accent-cyan);">Clear All</a>
+      </div>
+
+      <form action="{{ url_for('customer.catalog') }}" method="GET" id="catalogFilterForm">
+        <!-- Search keyword -->
+        <div class="form-group">
+          <label class="form-label" for="filter_q">Search Keyword</label>
+          <input type="text" name="q" id="filter_q" class="input-control" placeholder="Make, model, location..." value="{{ query_text }}">
+        </div>
+
+        <!-- Wheel Category Filter -->
+        <div class="form-group">
+          <label class="form-label" for="filter_category">Wheel Category</label>
+          <select name="category" id="filter_category" class="select-control">
+            <option value="">All Wheels (2W & 4W)</option>
+            <option value="2 Wheeler" {% if selected_category == '2 Wheeler' %}selected{% endif %}>🏍️ 2 Wheeler</option>
+            <option value="4 Wheeler" {% if selected_category == '4 Wheeler' %}selected{% endif %}>🚗 4 Wheeler</option>
+          </select>
+        </div>
+
+        <!-- Date Availability Filter -->
+        <div class="form-group" style="background: rgba(14, 165, 233, 0.05); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid rgba(14, 165, 233, 0.15);">
+          <label class="form-label" style="color: #38bdf8; font-size: 0.82rem; text-transform: uppercase;">Check Availability</label>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-dim);">Pickup Date</span>
+              <input type="date" name="pickup_date" id="filter_pickup" class="input-control" min="{{ today }}" value="{{ pickup_date }}">
+            </div>
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-dim);">Return Date</span>
+              <input type="date" name="return_date" id="filter_return" class="input-control" min="{{ today }}" value="{{ return_date }}">
+            </div>
+          </div>
+        </div>
+
+        <!-- Vehicle Type Filter -->
+        <div class="form-group">
+          <label class="form-label" for="filter_type">Body / Segment</label>
+          <select name="type" id="filter_type" class="select-control">
+            <option value="">All Segments</option>
+            {% for t in types %}
+              <option value="{{ t }}" {% if selected_type == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Location Filter -->
+        <div class="form-group">
+          <label class="form-label" for="filter_location">City Hub Location</label>
+          <select name="location" id="filter_location" class="select-control">
+            <option value="">All City Hubs</option>
+            {% for loc in locations %}
+              <option value="{{ loc }}" {% if selected_location == loc %}selected{% endif %}>{{ loc }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Price Range -->
+        <div class="form-group">
+          <label class="form-label">Daily Rate Range ({{ currency_symbol }})</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="number" name="min_price" class="input-control" placeholder="Min" min="0" value="{{ min_price }}">
+            <span style="color: var(--text-dim);">-</span>
+            <input type="number" name="max_price" class="input-control" placeholder="Max" min="0" value="{{ max_price }}">
+          </div>
+        </div>
+
+        <!-- Transmission -->
+        <div class="form-group">
+          <label class="form-label" for="filter_trans">Transmission</label>
+          <select name="transmission" id="filter_trans" class="select-control">
+            <option value="">Any Transmission</option>
+            <option value="Automatic" {% if selected_transmission == 'Automatic' %}selected{% endif %}>Automatic / CVT</option>
+            <option value="Manual" {% if selected_transmission == 'Manual' %}selected{% endif %}>Manual</option>
+          </select>
+        </div>
+
+        <!-- Fuel Type -->
+        <div class="form-group">
+          <label class="form-label" for="filter_fuel">Fuel Type</label>
+          <select name="fuel" id="filter_fuel" class="select-control">
+            <option value="">Any Fuel</option>
+            <option value="Petrol" {% if selected_fuel == 'Petrol' %}selected{% endif %}>Petrol</option>
+            <option value="Electric" {% if selected_fuel == 'Electric' %}selected{% endif %}>Electric</option>
+            <option value="Diesel" {% if selected_fuel == 'Diesel' %}selected{% endif %}>Diesel</option>
+            <option value="CNG" {% if selected_fuel == 'CNG' %}selected{% endif %}>CNG</option>
+            <option value="Hybrid" {% if selected_fuel == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+          </select>
+        </div>
+
+        <!-- Sort By -->
+        <div class="form-group">
+          <label class="form-label" for="filter_sort">Sort Order</label>
+          <select name="sort" id="filter_sort" class="select-control">
+            <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High (₹)</option>
+            <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low (₹)</option>
+            <option value="year_desc" {% if sort_by == 'year_desc' %}selected{% endif %}>Newest Model</option>
+            <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>Vehicle Name (A-Z)</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 0.5rem;">
+          Apply Filters
+        </button>
+      </form>
+    </aside>
+
+    <!-- Vehicles List Main Section -->
+    <main>
+      <!-- Results Toolbar -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span style="font-weight: 700; font-size: 1.1rem;">{{ total_count }}</span>
+          <span style="color: var(--text-muted);">vehicles matching filters</span>
+          {% if selected_category %}
+            <span style="background: rgba(99, 102, 241, 0.2); color: #818cf8; font-size: 0.8rem; padding: 0.2rem 0.6rem; border-radius: var(--radius-full); margin-left: 0.5rem; border: 1px solid rgba(99, 102, 241, 0.4);">
+              {{ '🏍️ 2 Wheelers' if selected_category == '2 Wheeler' else '🚗 4 Wheelers' }}
+            </span>
+          {% endif %}
+          {% if date_filter_active %}
+            <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: var(--radius-full); margin-left: 0.5rem; border: 1px solid rgba(16, 185, 129, 0.3);">
+              ✓ Available for {{ pickup_date }} &rarr; {{ return_date }}
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if vehicles %}
+        <div class="vehicles-grid">
+          {% for vehicle in vehicles %}
+            <div class="vehicle-card">
+              <div class="vehicle-media">
+                <img src="{{ vehicle.image_url }}" alt="{{ vehicle.name }}" loading="lazy">
+                <span class="vehicle-badge-type" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px);">
+                  {{ vehicle.category_icon }} {{ vehicle.category }} &bull; {{ vehicle.vehicle_type }}
+                </span>
+                <span class="vehicle-badge-status {{ vehicle.status }}">{{ vehicle.status }}</span>
+              </div>
+
+              <div class="vehicle-body">
+                <div class="vehicle-location">
+                  <span>📍</span> {{ vehicle.location }}
+                </div>
+                <h3 class="vehicle-title">{{ vehicle.name }}</h3>
+
+                <div class="vehicle-specs">
+                  <div class="spec-item">
+                    <span>👥</span>
+                    {% if vehicle.is_two_wheeler %}
+                      2 Riders (Helmet)
+                    {% else %}
+                      {{ vehicle.seating_capacity }} Seats
+                    {% endif %}
+                  </div>
+                  <div class="spec-item"><span>⚙️</span> {{ vehicle.transmission }}</div>
+                  <div class="spec-item"><span>⛽</span> {{ vehicle.fuel_type }}</div>
+                </div>
+
+                <p style="color: var(--text-dim); font-size: 0.85rem; line-height: 1.4; margin-bottom: 1.25rem;">
+                  {{ (vehicle.description or '')[:115] }}{% if vehicle.description and vehicle.description|length > 115 %}...{% endif %}
+                </p>
+
+                <div class="vehicle-footer">
+                  <div class="vehicle-price">
+                    <span class="price-value">{{ vehicle.daily_rate|format_currency }}</span>
+                    <span class="price-period">per day</span>
+                  </div>
+                  <a href="{{ url_for('customer.vehicle_detail', vehicle_id=vehicle.id, pickup_date=pickup_date, return_date=return_date) }}" class="btn btn-primary btn-sm">
+                    View & Reserve
+                  </a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <!-- Empty State -->
+        <div style="text-align: center; padding: 4rem 2rem; background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-xl);">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">🏍️🚗💨</div>
+          <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem;">No Vehicles Match Your Criteria</h2>
+          <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 1.75rem;">
+            Try adjusting your pickup dates, clearing category filters, or broadening your daily rate range.
+          </p>
+          <a href="{{ url_for('customer.catalog') }}" class="btn btn-secondary">
+            Reset All Filters
+          </a>
+        </div>
+      {% endif %}
+    </main>
+  </div>
+</div>
+{% endblock %}

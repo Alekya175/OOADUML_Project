@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}{{ vehicle.name }} | Apex Drive Fleet{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+  <!-- Breadcrumbs & Status Bar -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-dim);">
+      <a href="{{ url_for('customer.home') }}">Home</a>
+      <span>&rsaquo;</span>
+      <a href="{{ url_for('customer.catalog') }}">Fleet</a>
+      <span>&rsaquo;</span>
+      <span style="color: var(--text-main);">{{ vehicle.name }}</span>
+    </div>
+
+    <div>
+      <span class="status-pill {{ vehicle.status }}" style="font-size: 0.85rem;">
+        ● {{ vehicle.status|capitalize }}
+      </span>
+    </div>
+  </div>
+
+  <div class="detail-layout">
+    <!-- Left Column: Media & Vehicle Specs -->
+    <div>
+      <!-- Vehicle Photo Gallery -->
+      <div class="detail-gallery">
+        <img src="{{ vehicle.image_url }}" alt="{{ vehicle.name }}">
+      </div>
+
+      <!-- Title & Location Header -->
+      <div style="margin-bottom: 1.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+          <span class="badge-role" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.4); font-weight: 700;">
+            {{ vehicle.category_icon }} {{ vehicle.category }}
+          </span>
+          <span class="badge-role customer">{{ vehicle.vehicle_type }}</span>
+          <span style="color: var(--text-dim); font-size: 0.9rem;">Model Year {{ vehicle.year }}</span>
+        </div>
+        <h1 style="font-size: 2.3rem; font-weight: 800; letter-spacing: -0.02em;">{{ vehicle.name }}</h1>
+        <div style="display: flex; align-items: center; gap: 0.4rem; color: var(--text-muted); font-size: 0.95rem; margin-top: 0.35rem;">
+          <span>📍 Hub Location:</span>
+          <strong style="color: var(--text-main);">{{ vehicle.location }}</strong>
+        </div>
+      </div>
+
+      <!-- Specs Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1rem; text-align: center;">
+          <div style="font-size: 1.4rem; margin-bottom: 0.25rem;">👥</div>
+          <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Capacity</div>
+          <div style="font-weight: 700; color: var(--text-main);">
+            {% if vehicle.is_two_wheeler %}
+              2 Riders (Helmet)
+            {% else %}
+              {{ vehicle.seating_capacity }} Passengers
+            {% endif %}
+          </div>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1rem; text-align: center;">
+          <div style="font-size: 1.4rem; margin-bottom: 0.25rem;">⚙️</div>
+          <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Transmission</div>
+          <div style="font-weight: 700; color: var(--text-main);">{{ vehicle.transmission }}</div>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1rem; text-align: center;">
+          <div style="font-size: 1.4rem; margin-bottom: 0.25rem;">⛽</div>
+          <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Powertrain</div>
+          <div style="font-weight: 700; color: var(--text-main);">{{ vehicle.fuel_type }}</div>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1rem; text-align: center;">
+          <div style="font-size: 1.4rem; margin-bottom: 0.25rem;">🛣️</div>
+          <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Mileage</div>
+          <div style="font-weight: 700; color: var(--text-main);">{{ vehicle.mileage }}</div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.75rem; margin-bottom: 2rem;">
+        <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.75rem;">Vehicle Overview</h3>
+        <p style="color: var(--text-muted); line-height: 1.7; font-size: 0.95rem;">
+          {{ vehicle.description }}
+        </p>
+      </div>
+
+      <!-- Included Features -->
+      {% if vehicle.features_list %}
+        <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.75rem;">
+          <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.75rem;">Equipment & Key Features</h3>
+          <div class="features-pills">
+            {% for feature in vehicle.features_list %}
+              <div class="feature-pill">
+                <span>✓</span> {{ feature }}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Right Column: Interactive Booking Widget -->
+    <aside>
+      <div class="booking-widget-card">
+        <div class="widget-price-header">
+          <div>
+            <span style="font-size: 1.8rem; font-weight: 800; color: var(--text-main);">{{ vehicle.daily_rate|format_currency }}</span>
+            <span style="color: var(--text-dim); font-size: 0.85rem;">/ 24h day</span>
+          </div>
+          <div>
+            <span class="status-pill {{ vehicle.status }}">{{ vehicle.status|capitalize }}</span>
+          </div>
+        </div>
+
+        {% if vehicle.status != 'available' %}
+          <div style="padding: 1rem; background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: var(--radius-md); text-align: center; color: #fb7185; font-size: 0.9rem;">
+            ⚠️ This vehicle is currently not available for new reservations ({{ vehicle.status }}).
+          </div>
+        {% else %}
+          <!-- Booking Form -->
+          <form action="{{ url_for('customer.create_booking', vehicle_id=vehicle.id) }}" method="POST" id="bookingForm">
+            <input type="hidden" id="bookingVehicleId" value="{{ vehicle.id }}">
+            <input type="hidden" id="bookingDailyRate" value="{{ vehicle.daily_rate }}">
+
+            <div class="form-group">
+              <label for="pickup_date" class="form-label">Pickup Date</label>
+              <input type="date" name="pickup_date" id="pickup_date" class="input-control" required min="{{ today }}" value="{{ pickup_date }}">
+            </div>
+
+            <div class="form-group">
+              <label for="return_date" class="form-label">Return Date</label>
+              <input type="date" name="return_date" id="return_date" class="input-control" required min="{{ today }}" value="{{ return_date }}">
+              <div class="form-text">Must be after pickup date (minimum 1 rental day).</div>
+            </div>
+
+            <div class="form-group">
+              <label for="notes" class="form-label">Special Requests (Optional)</label>
+              <textarea name="notes" id="notes" rows="2" class="input-control" placeholder="Flight number, child seat request, etc."></textarea>
+            </div>
+
+            <!-- Real-time quote & conflict feedback box -->
+            <div id="quoteFeedback"></div>
+
+            <div class="quote-breakdown" id="liveQuoteContainer" {% if not quote %}style="display: none;"{% endif %}>
+              <div class="quote-row">
+                <span>Rental Duration</span>
+                <span id="quoteDays">{% if quote %}{{ quote.days }} day{{ 's' if quote.days > 1 else '' }}{% endif %}</span>
+              </div>
+              <div class="quote-row">
+                <span>Daily Rate</span>
+                <span>{{ vehicle.daily_rate|format_currency }}</span>
+              </div>
+              <div class="quote-row">
+                <span>Base Subtotal</span>
+                <span id="quoteSubtotal">{% if quote %}{{ quote.subtotal|format_currency }}{% endif %}</span>
+              </div>
+              <div class="quote-row">
+                <span>GST & Taxes (8% Compliant)</span>
+                <span id="quoteTax">{% if quote %}{{ quote.tax|format_currency }}{% endif %}</span>
+              </div>
+              <div class="quote-row total">
+                <span>Estimated Total</span>
+                <span id="quoteTotal" style="color: #38bdf8;">{% if quote %}{{ quote.total|format_currency }}{% endif %}</span>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.4rem;" id="quoteDaysExplanation">
+                {% if quote %}{{ quote.days_explanation }}{% endif %}
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            {% if current_user %}
+              <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitBookingBtn" style="margin-top: 1rem;">
+                Reserve Vehicle &rarr;
+              </button>
+            {% else %}
+              <a href="{{ url_for('auth.login', next=request.url) }}" class="btn btn-primary btn-block btn-lg" style="margin-top: 1rem;">
+                Sign In to Reserve &rarr;
+              </a>
+            {% endif %}
+
+            <!-- Cancellation Guarantee Badge -->
+            <div class="cancellation-note">
+              <span>🛡️</span>
+              <span><strong>Free Cancellation:</strong> Full refund anytime before pickup date.</span>
+            </div>
+          </form>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+{% endblock %}

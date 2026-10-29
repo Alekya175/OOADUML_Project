@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}500 Server Error | Apex Drive{% endblock %}
+{% block content %}
+<div class="container container-narrow" style="padding: 5rem 1rem; text-align: center;">
+  <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚙️</div>
+  <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem;">System Error</h1>
+  <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 2rem;">
+    An internal processing issue occurred. Stack traces and sensitive details have been protected. Please try again or return home.
+  </p>
+  <a href="{{ url_for('customer.home') }}" class="btn btn-primary">Return to Homepage</a>
+</div>
+{% endblock %}

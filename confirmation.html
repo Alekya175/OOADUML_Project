@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Reservation Confirmed | {{ booking.booking_reference }}{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div class="receipt-card">
+    <div class="receipt-header">
+      <div style="width: 64px; height: 64px; background: rgba(16, 185, 129, 0.15); color: #34d399; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.25rem; border: 1px solid rgba(16, 185, 129, 0.3);">
+        ✓
+      </div>
+      <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem;">
+        Reservation Confirmed!
+      </h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        Your vehicle is secured and your simulated payment has been successfully recorded.
+      </p>
+      <div class="receipt-ref">
+        Booking Reference: {{ booking.booking_reference }}
+      </div>
+    </div>
+
+    <!-- Booking Summary Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; background: rgba(15, 23, 42, 0.5); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-glass);">
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Vehicle Reserved</div>
+        <div style="font-weight: 700; color: var(--text-main); font-size: 1.05rem;">{{ booking.vehicle.name }}</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">{{ booking.vehicle.category_icon }} {{ booking.vehicle.category }} &bull; {{ booking.vehicle.vehicle_type }} &bull; {{ booking.vehicle.year }}</div>
+      </div>
+
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Pickup Hub</div>
+        <div style="font-weight: 700; color: var(--text-main); font-size: 1.05rem;">{{ booking.vehicle.location }}</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">Present booking ID & Driving Licence at counter</div>
+      </div>
+
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Rental Duration</div>
+        <div style="font-weight: 700; color: var(--text-main); font-size: 1.05rem;">{{ booking.pickup_date|format_date }} &rarr; {{ booking.return_date|format_date }}</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">{{ booking.total_days }} rental day{{ 's' if booking.total_days > 1 else '' }} (24h basis)</div>
+      </div>
+
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Customer Name</div>
+        <div style="font-weight: 700; color: var(--text-main); font-size: 1.05rem;">{{ booking.user.full_name }}</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">{{ booking.user.email }}</div>
+      </div>
+    </div>
+
+    <!-- Payment & Transaction Details -->
+    <div style="border-top: 1px dashed var(--border-glass); padding-top: 1.5rem; margin-bottom: 2rem;">
+      <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Payment Receipt (GST Compliant)</h3>
+      
+      <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.92rem; color: var(--text-muted);">
+          <span>Daily Rate ({{ booking.daily_rate|format_currency }} &times; {{ booking.total_days }} days)</span>
+          <span>{{ booking.subtotal_amount|format_currency }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.92rem; color: var(--text-muted);">
+          <span>GST & Taxes (8% Compliant)</span>
+          <span>{{ booking.tax_amount|format_currency }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 800; color: var(--text-main); border-top: 1px solid var(--border-glass); padding-top: 0.75rem;">
+          <span>Total Paid</span>
+          <span style="color: #34d399;">{{ booking.total_amount|format_currency }}</span>
+        </div>
+      </div>
+
+      {% if payment %}
+        <div style="margin-top: 1.25rem; padding: 1rem; background: rgba(14, 165, 233, 0.08); border-radius: var(--radius-md); border: 1px solid rgba(14, 165, 233, 0.2); font-size: 0.85rem; color: var(--text-muted); display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem;">
+          <div>Transaction ID: <strong style="color: var(--text-main); font-family: monospace;">{{ payment.transaction_id }}</strong></div>
+          <div>Method: <strong style="color: var(--text-main);">{{ payment.payment_method }}</strong></div>
+          <div>Status: <span class="status-pill completed">● Paid</span></div>
+          <div>Processed: <strong style="color: var(--text-main);">{{ payment.created_at.strftime('%b %d, %Y %H:%M') }}</strong></div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Actions -->
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <button onclick="window.print()" class="btn btn-secondary">
+        🖨️ Print Receipt
+      </button>
+      <a href="{{ url_for('customer.booking_history') }}" class="btn btn-primary">
+        Go to My Bookings &rarr;
+      </a>
+      <a href="{{ url_for('customer.catalog') }}" class="btn btn-secondary">
+        Browse More Vehicles
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

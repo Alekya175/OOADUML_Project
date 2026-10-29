@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Booking {{ booking.booking_reference }} | Apex Drive{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-dim);">
+      <a href="{{ url_for('customer.booking_history') }}">&larr; Back to My Bookings</a>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
+      <span class="status-pill {{ booking.status }}">● {{ booking.status|replace('_', ' ')|capitalize }}</span>
+      <button onclick="window.print()" class="btn btn-secondary btn-sm">🖨️ Print Invoice</button>
+    </div>
+  </div>
+
+  <div class="receipt-card" style="margin-top: 0;">
+    <div class="receipt-header">
+      <div style="font-size: 1.1rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Reservation Invoice</div>
+      <h1 style="font-size: 1.85rem; font-weight: 800; margin: 0.35rem 0;">Booking #{{ booking.booking_reference }}</h1>
+      <div style="font-size: 0.85rem; color: var(--text-muted);">Created on {{ booking.created_at.strftime('%B %d, %Y at %H:%M UTC') }}</div>
+    </div>
+
+    <!-- Vehicle & Customer Grid -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+      <div style="background: rgba(15, 23, 42, 0.5); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
+        <h4 style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.75rem;">Vehicle Details</h4>
+        <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">{{ booking.vehicle.name }}</div>
+        <div style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+          {{ booking.vehicle.category_icon }} {{ booking.vehicle.category }} &bull; {{ booking.vehicle.vehicle_type }} &bull; {{ booking.vehicle.transmission }} &bull; {{ booking.vehicle.fuel_type }}
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-dim);">📍 Hub: {{ booking.vehicle.location }}</div>
+      </div>
+
+      <div style="background: rgba(15, 23, 42, 0.5); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
+        <h4 style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.75rem;">Customer Details</h4>
+        <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">{{ booking.user.full_name }}</div>
+        <div style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.25rem;">Email: {{ booking.user.email }}</div>
+        <div style="font-size: 0.88rem; color: var(--text-muted);">Phone: {{ booking.user.phone or 'Not provided' }}</div>
+      </div>
+    </div>
+
+    <!-- Dates Card -->
+    <div style="background: rgba(14, 165, 233, 0.05); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 2rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Scheduled Pickup</div>
+          <div style="font-weight: 700; font-size: 1.05rem; color: var(--text-main);">{{ booking.pickup_date|format_date }}</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Scheduled Return</div>
+          <div style="font-weight: 700; font-size: 1.05rem; color: var(--text-main);">{{ booking.return_date|format_date }}</div>
+        </div>
+      </div>
+      <div style="font-size: 0.85rem; color: #38bdf8; margin-top: 0.5rem; border-top: 1px solid rgba(14, 165, 233, 0.15); padding-top: 0.5rem;">
+        Duration: <strong>{{ booking.total_days }} Rental Day{{ 's' if booking.total_days > 1 else '' }}</strong> (24-hour daily calculation basis)
+      </div>
+    </div>
+
+    <!-- Itemized Accounting -->
+    <div style="border-top: 1px dashed var(--border-glass); padding-top: 1.5rem; margin-bottom: 2rem;">
+      <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem;">Billing Itemization (GST Compliant)</h4>
+      <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.92rem; color: var(--text-muted);">
+          <span>Daily Rental Rate</span>
+          <span>{{ booking.daily_rate|format_currency }} / day</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.92rem; color: var(--text-muted);">
+          <span>Duration Subtotal ({{ booking.total_days }} days &times; {{ booking.daily_rate|format_currency }})</span>
+          <span>{{ booking.subtotal_amount|format_currency }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.92rem; color: var(--text-muted);">
+          <span>GST & Taxes (8% Compliant)</span>
+          <span>{{ booking.tax_amount|format_currency }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 800; color: var(--text-main); border-top: 1px solid var(--border-glass); padding-top: 0.75rem;">
+          <span>Total Rental Cost</span>
+          <span style="color: #38bdf8;">{{ booking.total_amount|format_currency }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Status Breakdown -->
+    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 2rem;">
+      <h4 style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.75rem;">Payment Audit Information</h4>
+      {% if payment %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; font-size: 0.88rem;">
+          <div>Status: <span class="status-pill {{ payment.status }}">● {{ payment.status|capitalize }}</span></div>
+          <div>Method: <strong>{{ payment.payment_method }}</strong></div>
+          <div>Ref: <span style="font-family: monospace; color: #38bdf8;">{{ payment.payment_reference }}</span></div>
+          <div>Txn ID: <span style="font-family: monospace; color: var(--text-dim);">{{ payment.transaction_id }}</span></div>
+        </div>
+      {% else %}
+        <div style="color: #fbbf24; font-size: 0.9rem;">
+          ⚠️ Simulated payment has not been completed yet.
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Cancellation Status or Action -->
+    {% if booking.status == 'cancelled' %}
+      <div style="background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: var(--radius-md); padding: 1rem; color: #fb7185; font-size: 0.9rem; margin-bottom: 1.5rem;">
+        <strong>Cancelled:</strong> This reservation was cancelled on {{ booking.cancelled_at.strftime('%b %d, %Y') if booking.cancelled_at else 'recently' }}. Reason: {{ booking.cancellation_reason or 'None provided' }}. Any payment was refunded.
+      </div>
+    {% elif can_cancel %}
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem;">
+        <div>
+          <div style="font-weight: 700; color: #a7f3d0; font-size: 0.9rem;">Eligible for Free Cancellation</div>
+          <div style="font-size: 0.82rem; color: var(--text-dim);">You can cancel anytime prior to pickup date ({{ booking.pickup_date|format_date }}).</div>
+        </div>
+        <form action="{{ url_for('customer.cancel_booking', booking_ref=booking.booking_reference) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking? Any payment will be refunded.');">
+          <input type="hidden" name="cancellation_reason" value="Customer requested cancellation via portal">
+          <button type="submit" class="btn btn-danger btn-sm">Cancel Booking</button>
+        </form>
+      </div>
+    {% endif %}
+
+    <div style="display: flex; justify-content: center; gap: 1rem;">
+      {% if booking.status == 'pending_payment' %}
+        <a href="{{ url_for('customer.checkout', booking_ref=booking.booking_reference) }}" class="btn btn-emerald">
+          Complete Simulated Payment &rarr;
+        </a>
+      {% endif %}
+      <a href="{{ url_for('customer.booking_history') }}" class="btn btn-secondary">
+        Return to My Reservations
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

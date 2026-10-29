@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Simulated Payment Records | Apex Drive Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+        <span class="badge-role admin">Financial Audits</span>
+      </div>
+      <h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em;">Payment Transaction Records</h1>
+    </div>
+  </div>
+
+  <!-- Status Filter -->
+  <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 2rem;">
+    <form action="{{ url_for('admin.payments') }}" method="GET" style="display: flex; gap: 1rem; align-items: center;">
+      <select name="status" class="select-control" style="max-width: 250px;">
+        <option value="">All Payment Statuses</option>
+        <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed / Paid</option>
+        <option value="failed" {% if selected_status == 'failed' %}selected{% endif %}>Failed / Declined</option>
+        <option value="refunded" {% if selected_status == 'refunded' %}selected{% endif %}>Refunded</option>
+        <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Pending</option>
+      </select>
+      <button type="submit" class="btn btn-secondary">Filter Records</button>
+    </form>
+  </div>
+
+  <!-- Payments Table -->
+  <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-xl); padding: 1.75rem;">
+    {% if payments %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Payment Reference</th>
+              <th>Transaction ID</th>
+              <th>Booking Reference</th>
+              <th>Customer</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Simulated Result</th>
+              <th>Status</th>
+              <th>Processed Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in payments %}
+              <tr>
+                <td>
+                  <span style="font-family: monospace; font-weight: 700; color: #38bdf8;">{{ p.payment_reference }}</span>
+                </td>
+                <td>
+                  <span style="font-family: monospace; font-size: 0.82rem; color: var(--text-dim);">{{ p.transaction_id }}</span>
+                </td>
+                <td>
+                  <a href="{{ url_for('customer.booking_detail', booking_ref=p.booking.booking_reference) }}" target="_blank" style="font-family: monospace; color: var(--text-main);">
+                    {{ p.booking.booking_reference }}
+                  </a>
+                </td>
+                <td>
+                  <div style="font-weight: 600;">{{ p.cardholder_name or p.booking.user.full_name }}</div>
+                  <div style="font-size: 0.8rem; color: var(--text-dim);">{{ p.booking.user.email }}</div>
+                </td>
+                <td style="font-weight: 800; color: var(--text-main);">
+                  {{ p.amount|format_currency }}
+                </td>
+                <td>
+                  {{ p.payment_method }} {% if p.card_last4 and p.card_last4 not in ['UPI', 'NETB', 'CASH'] %}(•••• {{ p.card_last4 }}){% endif %}
+                </td>
+                <td>
+                  {% if p.simulated_outcome == 'success' %}
+                    <span style="color: #34d399; font-weight: 600;">✓ Approved</span>
+                  {% else %}
+                    <span style="color: #fb7185; font-weight: 600;" title="{{ p.failure_reason }}">✕ {{ p.failure_reason or 'Declined' }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="status-pill {{ p.status }}">● {{ p.status|capitalize }}</span>
+                </td>
+                <td style="font-size: 0.85rem; color: var(--text-dim);">
+                  {{ p.created_at.strftime('%b %d, %Y %H:%M') }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="text-align: center; color: var(--text-muted); padding: 3rem;">No payment transactions recorded.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

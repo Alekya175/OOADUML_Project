@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | Apex Drive Fleet Operations{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <!-- Header Bar -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+        <span class="badge-role admin">Operations Center</span>
+        <span style="color: var(--text-dim); font-size: 0.85rem;">System Live • MySQL Connected</span>
+      </div>
+      <h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em;">Fleet Operations Dashboard</h1>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <a href="{{ url_for('admin.add_vehicle') }}" class="btn btn-primary">
+        + Add New Vehicle
+      </a>
+      <a href="{{ url_for('admin.bookings') }}" class="btn btn-secondary">
+        Manage Bookings
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI Metrics Grid -->
+  <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+    <div class="kpi-card">
+      <div class="kpi-icon blue">🚗</div>
+      <div class="kpi-info">
+        <h3>Total Fleet</h3>
+        <p>{{ total_vehicles }}</p>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon indigo" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8;">🏍️</div>
+      <div class="kpi-info">
+        <h3>2 Wheelers</h3>
+        <p>{{ two_wheelers_count }}</p>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon cyan" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">🚘</div>
+      <div class="kpi-info">
+        <h3>4 Wheelers</h3>
+        <p>{{ four_wheelers_count }}</p>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon emerald">✓</div>
+      <div class="kpi-info">
+        <h3>Available</h3>
+        <p>{{ available_vehicles }}</p>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon indigo">📋</div>
+      <div class="kpi-info">
+        <h3>Total Bookings</h3>
+        <p>{{ total_bookings }}</p>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon amber">₹</div>
+      <div class="kpi-info">
+        <h3>Gross Revenue</h3>
+        <p>{{ total_revenue|format_currency }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Nav Tabs -->
+  <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.75rem;">
+    <a href="{{ url_for('admin.dashboard') }}" class="nav-link active" style="font-weight: 700; color: var(--accent-cyan);">Dashboard Overview</a>
+    <a href="{{ url_for('admin.vehicles') }}" class="nav-link">Vehicle Fleet ({{ total_vehicles }})</a>
+    <a href="{{ url_for('admin.bookings') }}" class="nav-link">Customer Bookings ({{ total_bookings }})</a>
+    <a href="{{ url_for('admin.payments') }}" class="nav-link">Payment Records</a>
+    <a href="{{ url_for('admin.customers') }}" class="nav-link">Registered Customers ({{ total_customers }})</a>
+  </div>
+
+  <!-- Recent Bookings Table -->
+  <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-xl); padding: 1.75rem; margin-bottom: 2.5rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+      <h2 style="font-size: 1.35rem; font-weight: 700;">Recent Reservations</h2>
+      <a href="{{ url_for('admin.bookings') }}" style="font-size: 0.88rem; color: var(--accent-cyan);">View All &rarr;</a>
+    </div>
+
+    {% if recent_bookings %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Customer</th>
+              <th>Vehicle</th>
+              <th>Rental Window</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Quick Update</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in recent_bookings %}
+              <tr>
+                <td>
+                  <span style="font-family: monospace; font-weight: 600; color: #38bdf8;">{{ b.booking_reference }}</span>
+                </td>
+                <td>
+                  <div style="font-weight: 600;">{{ b.user.full_name }}</div>
+                  <div style="font-size: 0.8rem; color: var(--text-dim);">{{ b.user.email }}</div>
+                </td>
+                <td>
+                  <a href="{{ url_for('customer.vehicle_detail', vehicle_id=b.vehicle_id) }}" style="color: var(--text-main); font-weight: 600;">
+                    {{ b.vehicle.name }}
+                  </a>
+                </td>
+                <td>
+                  <div style="font-size: 0.88rem;">{{ b.pickup_date|format_date }} &rarr; {{ b.return_date|format_date }}</div>
+                  <div style="font-size: 0.78rem; color: var(--text-dim);">{{ b.total_days }} days</div>
+                </td>
+                <td style="font-weight: 700; color: var(--text-main);">
+                  {{ b.total_amount|format_currency }}
+                </td>
+                <td>
+                  <span class="status-pill {{ b.status }}">● {{ b.status|replace('_', ' ')|capitalize }}</span>
+                </td>
+                <td>
+                  <form action="{{ url_for('admin.update_booking_status', booking_id=b.id) }}" method="POST" style="display: flex; gap: 0.4rem; align-items: center;">
+                    <select name="status" class="select-control" style="padding: 0.3rem 0.5rem; font-size: 0.82rem; width: auto;">
+                      <option value="pending_payment" {% if b.status == 'pending_payment' %}selected{% endif %}>Pending</option>
+                      <option value="confirmed" {% if b.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                      <option value="completed" {% if b.status == 'completed' %}selected{% endif %}>Completed</option>
+                      <option value="cancelled" {% if b.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                    <button type="submit" class="btn btn-secondary btn-sm" style="padding: 0.3rem 0.6rem;">Set</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted); text-align: center; padding: 2rem;">No bookings recorded yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- Recent Payments Audit Log -->
+  <div style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-xl); padding: 1.75rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+      <h2 style="font-size: 1.35rem; font-weight: 700;">Recent Simulated Payments</h2>
+      <a href="{{ url_for('admin.payments') }}" style="font-size: 0.88rem; color: var(--accent-cyan);">View Full Audit Log &rarr;</a>
+    </div>
+
+    {% if recent_payments %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Payment Ref</th>
+              <th>Booking Ref</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Outcome</th>
+              <th>Status</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in recent_payments %}
+              <tr>
+                <td style="font-family: monospace; color: #38bdf8;">{{ p.payment_reference }}</td>
+                <td>
+                  <span style="font-family: monospace;">{{ p.booking.booking_reference }}</span>
+                </td>
+                <td style="font-weight: 700;">{{ p.amount|format_currency }}</td>
+                <td>{{ p.payment_method }} {% if p.card_last4 and p.card_last4 not in ['UPI', 'NETB', 'CASH'] %}(•••• {{ p.card_last4 }}){% endif %}</td>
+                <td>
+                  {% if p.simulated_outcome == 'success' %}
+                    <span style="color: #34d399; font-weight: 600;">✓ Approved</span>
+                  {% else %}
+                    <span style="color: #fb7185; font-weight: 600;" title="{{ p.failure_reason }}">✕ Declined</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="status-pill {{ p.status }}">● {{ p.status|capitalize }}</span>
+                </td>
+                <td style="font-size: 0.85rem; color: var(--text-dim);">
+                  {{ p.created_at.strftime('%b %d, %Y %H:%M') }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted); text-align: center; padding: 2rem;">No simulated transactions yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
